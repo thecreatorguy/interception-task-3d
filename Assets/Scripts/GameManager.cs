@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using TMPro;
 
 public class GameManager : Singleton<GameManager>
 {
     public GameObject Target;
     public GameObject Subject;
     public GameObject Path;
+    public TextMeshProUGUI StateDisplay;
     public int FPS = 30;
     public float[] ApproachAngleList = {135f, 140f, 145f};
     public float[] SubjectSpeedList = {2.0f, 4.0f, 8.0f, 10.0f, 12.0f, 14.0f};
@@ -51,13 +53,6 @@ public class GameManager : Singleton<GameManager>
 
         // Game logic
         ResetTask(_random.Next(0, TargetInitSpeedList.Length), _random.Next(0, ApproachAngleList.Length));
-        Target.transform.localScale = new Vector3(InterceptThreshold, InterceptThreshold, InterceptThreshold);
-        Subject.transform.localScale = new Vector3(InterceptThreshold, InterceptThreshold, InterceptThreshold);
-        SetPositions();
-
-        // self.action_space = spaces.Discrete(6)
-        // self.action_speed_mappings = []
-        // self.state = (target_dis, target_speed, has_changed_speed, subject_dis, subject_speed)
     }
 
     private void SetPositions()
@@ -76,6 +71,9 @@ public class GameManager : Singleton<GameManager>
 
     private void ResetTask(int targetSpeedIndex, int approachAngleIndex)
     {
+        Target.transform.localScale = new Vector3(InterceptThreshold, InterceptThreshold, InterceptThreshold);
+        Subject.transform.localScale = new Vector3(InterceptThreshold, InterceptThreshold, InterceptThreshold);
+
         _timeToChangeSpeed = Random.Range(MinTimeToChangeSpeed, MaxTimeToChangeSpeed);
         _hasChangedSpeed = false;
         _targetDistance = TargetInitDistance;
@@ -87,15 +85,25 @@ public class GameManager : Singleton<GameManager>
         _done = false;
     }
 
-    public void Step()
+    private void GetInput()
     {
-        if (_done) return;
+        for (int i = 1; i <= SubjectSpeedList.Length && i < 10; i++)
+        {
+            if (Input.GetKey(i.ToString()))
+            {
+                _subjectSpeed = SubjectSpeedList[i-1];
+            }
+        }
+    }
 
-        _subjectDistance -= _subjectSpeed / FPS;
+    private void Step(float subjectSpeed)
+    {
+        _subjectDistance -= subjectSpeed / FPS;
         _targetDistance -= _targetSpeed / FPS;
 
         _elapsedTime += 1d / FPS;
-        if (!_hasChangedSpeed && _elapsedTime >= _timeToChangeSpeed) {
+        if (!_hasChangedSpeed && _elapsedTime >= _timeToChangeSpeed) 
+        {
             _hasChangedSpeed = true;
             _targetSpeed = Mathf.Max(TargetMinSpeed, Mathf.Min(TargetMaxSpeed, (float)RandomNormal(TargetSpeedMean, TargetSpeedStd)));
         }
@@ -104,13 +112,25 @@ public class GameManager : Singleton<GameManager>
                                                     2 * _targetDistance * _subjectDistance * Mathf.Cos(_approachAngle * Mathf.PI / 180));
 
         _done = _subjectDistance < -InterceptThreshold || _targetDistance < -InterceptThreshold || targetSubjectDistance < InterceptThreshold;
+    }
 
-        SetPositions();
+    private void RenderUI()
+    {
+        StateDisplay.text = $"Target Distance: {_targetDistance}\nTarget Speed: {_targetSpeed}\nHas Changed Speed: {_hasChangedSpeed}\nSubject Distance: {_subjectDistance}\nSubject Speed: {_subjectSpeed}";
+        // self.state = (target_dis, target_speed, has_changed_speed, subject_dis, subject_speed)
     }
 
     private void FixedUpdate() 
     {
-        Step();
+        if (_done) return;
+        GetInput();
+        Step(_subjectSpeed);
+    }
+
+    private void Update()
+    {
+        SetPositions();
+        RenderUI();
     }
 
     private double RandomNormal(double mean, double stdDev)
