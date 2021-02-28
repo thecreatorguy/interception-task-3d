@@ -87,6 +87,7 @@ public class TrialController : MonoBehaviour
         _hasChangedSpeed = false;
         _active = true;
         _recordedState = new List<object>();
+        RecordCurrentState();
     }
 
     private void Step(float subjectSpeed)
