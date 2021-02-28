@@ -1,10 +1,29 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using System.Linq;
 using TMPro;
 using UXF;
 
 public class TrialController : MonoBehaviour
 {
+    // self.state = (target_dis, target_speed, has_changed_speed, subject_dis, subject_speed)
+    class State {
+        public float targetDistance;
+        public float targetSpeed;
+        public bool hasChangedSpeed;
+        public float subjectDistance;
+        public float subjectSpeed;
+
+        // public State(float targetDistance, float targetSpeed, bool hasChangedSpeed, float subjectDistance, float subjectSpeed) {
+        //     this.targetDistance = targetDistance;
+        //     this.targetSpeed = targetSpeed;
+        //     this.hasChangedSpeed = hasChangedSpeed;
+        //     this.subjectDistance = subjectDistance;
+        //     this.subjectSpeed = subjectSpeed;
+        // }
+    }
+
     // Objects to manipulate
     public GameObject Target;
     public GameObject Subject;
@@ -27,11 +46,11 @@ public class TrialController : MonoBehaviour
     private bool _hasChangedSpeed;
     private double _timeToChangeSpeed;
     private double _elapsedTime;
-    private bool _done;
+    private bool _active = false;
+    private List<object> _recordedState;
 
     protected void Awake()
     {
-        // Set the framerate so that the time between each frame is the same
         Time.fixedDeltaTime = 1f / FPS;
     }
 
@@ -43,7 +62,7 @@ public class TrialController : MonoBehaviour
 
     private void FixedUpdate() 
     {
-        if (_done) return;
+        if (!_active) return;
         Step(_subjectSpeed);
     }
 
@@ -53,12 +72,12 @@ public class TrialController : MonoBehaviour
         SetPositions();
         RenderUI();
     }
-    private void BeginTrial(Trial t)
+    public void BeginTrial(Trial t)
     {
         Settings s = t.settings;
         _approachAngle = s.GetFloat("approachAngle");
-        _subjectDistance = s.GetFloat("subjectDistance");
-        _targetDistance = s.GetFloat("targetDistance");
+        _subjectDistance = s.GetFloat("subjectInitDistance");
+        _targetDistance = s.GetFloat("targetInitDistance");
         _targetSpeed = s.GetFloat("targetInitSpeed");
         _targetFinalSpeed = s.GetFloat("targetFinalSpeed");
         _timeToChangeSpeed = s.GetFloat("timeToChangeSpeed");
@@ -66,7 +85,8 @@ public class TrialController : MonoBehaviour
         _subjectSpeed = SubjectSpeeds.Min();
         _elapsedTime = 0d;
         _hasChangedSpeed = false;
-        _done = false;
+        _active = true;
+        _recordedState = new List<object>();
     }
 
     private void Step(float subjectSpeed)
@@ -83,7 +103,29 @@ public class TrialController : MonoBehaviour
         
         float targetSubjectDistance = Mathf.Sqrt(Mathf.Pow(_targetDistance, 2) + Mathf.Pow(_subjectDistance, 2) - 
                                                     2 * _targetDistance * _subjectDistance * Mathf.Cos(_approachAngle * Mathf.PI / 180));
-        _done = _subjectDistance < -SubjectRadius || _targetDistance < -TargetRadius || targetSubjectDistance < (TargetRadius + SubjectRadius);
+        bool won = targetSubjectDistance < (TargetRadius + SubjectRadius);
+        _active = !(_subjectDistance < -SubjectRadius*2 || _targetDistance < -TargetRadius*2 || won);
+
+        RecordCurrentState();
+        
+        if (!_active) {
+            Session.instance.CurrentTrial.SaveJSONSerializableObject(_recordedState, won ? "state_data_won" : "state_data_lost");
+            Session.instance.EndCurrentTrial();
+        }
+    }
+
+    private void RecordCurrentState() {
+        // Dictionary form
+        _recordedState.Add(new Dictionary<string, object>(){
+            ["target_distance"]   = _targetDistance, 
+            ["target_speed"]      = _targetSpeed,
+            ["has_changed_speed"] = _hasChangedSpeed,
+            ["subject_distance"]  = _subjectDistance,
+            ["subject_speed"]     = _subjectSpeed
+        });
+
+        // List form
+        // _recordedState.Add(new List<object>(){_targetDistance, _targetSpeed, _hasChangedSpeed, _subjectDistance, _subjectSpeed});
     }
 
     private void SetPositions()

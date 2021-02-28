@@ -72,4 +72,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Experiment Data (For now)
-/Data
+/Data/*
+!/Data/.gitkeep

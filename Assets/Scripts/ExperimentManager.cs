@@ -5,7 +5,8 @@ using UXF;
 
 public class ExperimentManager : MonoBehaviour
 {
-    // A no seed RNG- maybe add the ability to seed it later?
+    // A no seed RNG
+    //TODO- maybe add the ability to seed it later? Look with Gabe
     private System.Random _random = new System.Random();
 
     public void Generate()
@@ -26,6 +27,8 @@ public class ExperimentManager : MonoBehaviour
         float targetSpeedMean        = s.GetFloat("targetSpeedMean");
         float targetSpeedStdDev      = s.GetFloat("targetSpeedStdDev");
 
+        // Create randomized trials
+        // TODO: look at this with Gabe
         Block b = sess.CreateBlock();
         foreach (float approachAngle in approachAngles) 
         {
@@ -33,16 +36,24 @@ public class ExperimentManager : MonoBehaviour
             {
                 Trial t = b.CreateTrial();
                 t.settings.SetValue("approachAngle", approachAngle);
-                t.settings.SetValue("subjectInitDistance", Random.Range(timeToChangeSpeedMin, timeToChangeSpeedMax)); //? different random?
+                t.settings.SetValue("subjectInitDistance", Random.Range(subjectInitDistanceMin, subjectInitDistanceMax)); //? different random?
                 t.settings.SetValue("targetInitSpeed", targetInitSpeed);
                 t.settings.SetValue("timeToChangeSpeed", Random.Range(timeToChangeSpeedMin, timeToChangeSpeedMax)); //?
                 t.settings.SetValue("targetFinalSpeed", 
                         Mathf.Max(targetSpeedMin, Mathf.Min(targetSpeedMax, (float)RandomNormal(targetSpeedMean, targetSpeedStdDev)))); //?
-                break;
             }
-            break;
         }
         b.trials.Shuffle();
+        Session.instance.BeginNextTrial();
+    }
+
+    public void TrialEnded(Trial t)
+    {
+        if (t.Equals(t.block.lastTrial)) {
+            Session.instance.End();
+        } else {
+            Session.instance.BeginNextTrial();
+        }
     }
 
     private double RandomNormal(double mean, double stdDev)
