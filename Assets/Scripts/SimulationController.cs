@@ -13,23 +13,9 @@ public class TrialController : MonoBehaviour
 
     // Experiment settings
     public int FPS = 30;
-    // public float[] ApproachAngleList = {135f, 140f, 145f};
     public float[] SubjectSpeeds = {2.0f, 4.0f, 8.0f, 10.0f, 12.0f, 14.0f};
-    // public float SubjectMinInitDistance = 20f;
-    // public float SubjectMaxInitDistance = 30f;
     public float SubjectRadius = 0.35f;
-    // public float TargetInitDistance = 45f;
-    // public float[] TargetInitSpeedList = {11.25f, 9.47f, 8.18f};
-    // public float MinTimeToChangeSpeed = 2.5f;
-    // public float MaxTimeToChangeSpeed = 3.25f;
-    // public float TargetMinSpeed = 10f;
-    // public float TargetMaxSpeed = 20f;
-    // public float TargetSpeedMean = 15f;
-    // public float TargetSpeedStd = 5f;
     public float TargetRadius = 0.35f;
-
-    // A no seed RNG- maybe add the ability to seed it later?
-    private System.Random _random = new System.Random();
 
     // Trial-specific variables
     private float _approachAngle;
@@ -42,7 +28,6 @@ public class TrialController : MonoBehaviour
     private double _timeToChangeSpeed;
     private double _elapsedTime;
     private bool _done;
-    
 
     protected void Awake()
     {
@@ -54,8 +39,6 @@ public class TrialController : MonoBehaviour
     {
         Target.transform.localScale = new Vector3(TargetRadius, TargetRadius, TargetRadius);
         Subject.transform.localScale = new Vector3(SubjectRadius, SubjectRadius, SubjectRadius);
-
-        // Reset(_random.Next(0, TargetInitSpeedList.Length), _random.Next(0, ApproachAngleList.Length));
     }
 
     private void FixedUpdate() 
@@ -70,23 +53,19 @@ public class TrialController : MonoBehaviour
         SetPositions();
         RenderUI();
     }
-    private void Reset(float approachAngle, float subjectDistance, float targetDistance,
-                        float targetInitSpeed, float targetFinalSpeed, float timeToChangeSpeed)
+    private void BeginTrial(Trial t)
     {
-        _approachAngle = approachAngle;
-        _subjectDistance = subjectDistance;
-        _targetDistance = targetDistance;
-        _targetSpeed = targetInitSpeed;
-        _targetFinalSpeed = targetFinalSpeed;
-        _timeToChangeSpeed = timeToChangeSpeed;
-        // _timeToChangeSpeed = Random.Range(MinTimeToChangeSpeed, MaxTimeToChangeSpeed);
-        // _hasChangedSpeed = false;
-        // _targetDistance = TargetInitDistance;
-        // _targetSpeed = TargetInitSpeedList[targetSpeedIndex];
-        // _approachAngle = ApproachAngleList[approachAngleIndex];
-        // _subjectDistance = Random.Range(SubjectMinInitDistance, SubjectMaxInitDistance);
+        Settings s = t.settings;
+        _approachAngle = s.GetFloat("approachAngle");
+        _subjectDistance = s.GetFloat("subjectDistance");
+        _targetDistance = s.GetFloat("targetDistance");
+        _targetSpeed = s.GetFloat("targetInitSpeed");
+        _targetFinalSpeed = s.GetFloat("targetFinalSpeed");
+        _timeToChangeSpeed = s.GetFloat("timeToChangeSpeed");
+
         _subjectSpeed = SubjectSpeeds.Min();
         _elapsedTime = 0d;
+        _hasChangedSpeed = false;
         _done = false;
     }
 
@@ -100,7 +79,6 @@ public class TrialController : MonoBehaviour
         {
             _hasChangedSpeed = true;
             _targetSpeed = _targetFinalSpeed;
-            // _targetSpeed = Mathf.Max(TargetMinSpeed, Mathf.Min(TargetMaxSpeed, (float)RandomNormal(TargetSpeedMean, TargetSpeedStd)));
         }
         
         float targetSubjectDistance = Mathf.Sqrt(Mathf.Pow(_targetDistance, 2) + Mathf.Pow(_subjectDistance, 2) - 
@@ -136,13 +114,5 @@ public class TrialController : MonoBehaviour
     private void RenderUI()
     {
         StateDisplay.text = $"Target Distance: {_targetDistance}\nTarget Speed: {_targetSpeed}\nHas Changed Speed: {_hasChangedSpeed}\nSubject Distance: {_subjectDistance}\nSubject Speed: {_subjectSpeed}";
-    }
-
-    private double RandomNormal(double mean, double stdDev)
-    {
-        double u1 = 1.0-_random.NextDouble();
-        double u2 = 1.0-_random.NextDouble();
-        double randStdNormal = System.Math.Sqrt(-2.0f * System.Math.Log(u1)) * System.Math.Sin(2.0f * Mathf.PI * u2);
-        return mean + stdDev * randStdNormal;
     }
 }

@@ -1,3 +1,13 @@
 {
-  
+  "approachAngles": [135, 140, 145],
+  "subjectInitDistanceMin": 20,
+  "subjectInitDistanceMax": 30,
+  "targetInitDistance": 45,
+  "targetInitSpeeds": [11.25, 9.47, 8.18],
+  "timeToChangeSpeedMin": 2.5,
+  "timeToChangeSpeedMax": 3.25,
+  "targetSpeedMin": 10,
+  "targetSpeedMax": 20,
+  "targetSpeedMean": 15,
+  "targetSpeedStdDev": 5
 }
