@@ -121,6 +121,82 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &316310353
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 316310356}
+  - component: {fileID: 316310355}
+  - component: {fileID: 316310354}
+  m_Layer: 0
+  m_Name: Terrain
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!154 &316310354
+TerrainCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316310353}
+  m_Material: {fileID: 0}
+  m_Enabled: 1
+  m_TerrainData: {fileID: 15600000, guid: 9810a08041937314a9fea5ed9077b77b, type: 2}
+  m_EnableTreeColliders: 1
+--- !u!218 &316310355
+Terrain:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316310353}
+  m_Enabled: 1
+  serializedVersion: 6
+  m_TerrainData: {fileID: 15600000, guid: 9810a08041937314a9fea5ed9077b77b, type: 2}
+  m_TreeDistance: 5000
+  m_TreeBillboardDistance: 50
+  m_TreeCrossFadeLength: 5
+  m_TreeMaximumFullLODCount: 50
+  m_DetailObjectDistance: 80
+  m_DetailObjectDensity: 1
+  m_HeightmapPixelError: 5
+  m_SplatMapDistance: 1000
+  m_HeightmapMaximumLOD: 0
+  m_ShadowCastingMode: 2
+  m_DrawHeightmap: 1
+  m_DrawInstanced: 0
+  m_DrawTreesAndFoliage: 1
+  m_ReflectionProbeUsage: 1
+  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_BakeLightProbesForTrees: 1
+  m_PreserveTreePrototypeLayers: 0
+  m_DeringLightProbesForTrees: 1
+  m_ScaleInLightmap: 0.0256
+  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
+  m_GroupingID: 0
+  m_RenderingLayerMask: 1
+  m_AllowAutoConnect: 1
+--- !u!4 &316310356
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316310353}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 11
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &342845209
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,12 +284,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342845209}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.01, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.00999999, z: 0}
   m_LocalScale: {x: 0.25, y: 1, z: 1000}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &724860250
 GameObject:
@@ -306,7 +382,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &768283509
 GameObject:
@@ -398,7 +474,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 50, y: 150, z: 0}
 --- !u!1 &883159358
 GameObject:
@@ -533,7 +609,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &1039083459
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -607,7 +683,7 @@ Transform:
   m_LocalScale: {x: 1000, y: 1, z: 1000}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1223331654
 PrefabInstance:
@@ -670,6 +746,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
+      propertyPath: onTrialEnd.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
       propertyPath: onTrialBegin.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -680,9 +761,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
+      propertyPath: onTrialEnd.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
       propertyPath: onTrialBegin.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
+      propertyPath: onTrialEnd.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1387364751}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
       propertyPath: onSessionBegin.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -695,9 +786,19 @@ PrefabInstance:
       objectReference: {fileID: 1405100496}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
+      propertyPath: onTrialEnd.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
       propertyPath: onSessionBegin.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1387364751}
+    - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
+      propertyPath: onTrialEnd.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: TrialEnded
+      objectReference: {fileID: 0}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
       propertyPath: onTrialBegin.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -711,12 +812,17 @@ PrefabInstance:
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
       propertyPath: onSessionBegin.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
       propertyPath: onSessionBegin.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: Generate
+      objectReference: {fileID: 0}
+    - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
+      propertyPath: onTrialEnd.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 114916036141644208, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
@@ -857,6 +963,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3482543129398382144, guid: 0a3b6392f04558844bd340e68ced1ff9,
+        type: 3}
+      propertyPath: m_Text
+      value: Interception Task
       objectReference: {fileID: 0}
     - target: {fileID: 4267567203292169432, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
@@ -1041,7 +1152,17 @@ PrefabInstance:
     - target: {fileID: 8563684494448067901, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
       propertyPath: m_Text
-      value: Here is a testyboy eyy
+      value: 'To perform the Interception Task experiment, click Accept below and
+        then Begin Session.
+
+
+        Controls: 1-6 on the keyboard to control speeds
+        from slowest to fastest
+
+
+        Try to intercept the Red target with the
+        Green ball. The Red target will change speeds at some point, mostly faster,
+        sometimes slower.'
       objectReference: {fileID: 0}
     - target: {fileID: 8857235641008765976, guid: 0a3b6392f04558844bd340e68ced1ff9,
         type: 3}
@@ -1122,9 +1243,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea90f364202438942ab8ce4f7dc7500f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Target: {fileID: 724860250}
   Subject: {fileID: 2098477849}
-  Path: {fileID: 342845209}
+  SubjectRoad: {fileID: 342845209}
+  Target: {fileID: 724860250}
+  TargetRoad: {fileID: 1880602278}
   StateDisplay: {fileID: 1424873016}
   FPS: 30
   SubjectSpeeds:
@@ -1136,6 +1258,8 @@ MonoBehaviour:
   - 14
   SubjectRadius: 0.35
   TargetRadius: 0.35
+  RoadsEnabled: 1
+  DisplayStats: 0
 --- !u!4 &1405100497
 Transform:
   m_ObjectHideFlags: 0
@@ -1447,7 +1571,7 @@ RectTransform:
   m_Children:
   - {fileID: 1424873015}
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1541,12 +1665,12 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1880602278}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.01, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.00999999, z: 0}
   m_LocalScale: {x: 1000, y: 1, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2098477849
 GameObject:
@@ -1640,5 +1764,5 @@ Transform:
   m_Children:
   - {fileID: 883159361}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

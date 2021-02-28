@@ -7,34 +7,20 @@ using UXF;
 
 public class TrialController : MonoBehaviour
 {
-    // self.state = (target_dis, target_speed, has_changed_speed, subject_dis, subject_speed)
-    class State {
-        public float targetDistance;
-        public float targetSpeed;
-        public bool hasChangedSpeed;
-        public float subjectDistance;
-        public float subjectSpeed;
-
-        // public State(float targetDistance, float targetSpeed, bool hasChangedSpeed, float subjectDistance, float subjectSpeed) {
-        //     this.targetDistance = targetDistance;
-        //     this.targetSpeed = targetSpeed;
-        //     this.hasChangedSpeed = hasChangedSpeed;
-        //     this.subjectDistance = subjectDistance;
-        //     this.subjectSpeed = subjectSpeed;
-        // }
-    }
-
     // Objects to manipulate
-    public GameObject Target;
     public GameObject Subject;
-    public GameObject Path;
+    public GameObject SubjectRoad;
+    public GameObject Target;
+    public GameObject TargetRoad;
     public TextMeshProUGUI StateDisplay;
 
-    // Experiment settings
+    // Experiment settings, should be constant across all trials
     public int FPS = 30;
     public float[] SubjectSpeeds = {2.0f, 4.0f, 8.0f, 10.0f, 12.0f, 14.0f};
     public float SubjectRadius = 0.35f;
     public float TargetRadius = 0.35f;
+    public bool RoadsEnabled = true;
+    public bool DisplayStats = false;
 
     // Trial-specific variables
     private float _approachAngle;
@@ -49,15 +35,15 @@ public class TrialController : MonoBehaviour
     private bool _active = false;
     private List<object> _recordedState;
 
-    protected void Awake()
-    {
-        Time.fixedDeltaTime = 1f / FPS;
-    }
-
     private void Start() 
     {
-        Target.transform.localScale = new Vector3(TargetRadius, TargetRadius, TargetRadius);
+        // Write all experiment wide settings
+        Time.fixedDeltaTime = 1f / FPS;
         Subject.transform.localScale = new Vector3(SubjectRadius, SubjectRadius, SubjectRadius);
+        SubjectRoad.SetActive(RoadsEnabled);
+        Target.transform.localScale = new Vector3(TargetRadius, TargetRadius, TargetRadius);
+        TargetRoad.SetActive(RoadsEnabled);
+        StateDisplay.alpha = DisplayStats ? 1 : 0;
     }
 
     private void FixedUpdate() 
@@ -75,17 +61,35 @@ public class TrialController : MonoBehaviour
     public void BeginTrial(Trial t)
     {
         Settings s = t.settings;
-        _approachAngle = s.GetFloat("approachAngle");
-        _subjectDistance = s.GetFloat("subjectInitDistance");
-        _targetDistance = s.GetFloat("targetInitDistance");
-        _targetSpeed = s.GetFloat("targetInitSpeed");
-        _targetFinalSpeed = s.GetFloat("targetFinalSpeed");
-        _timeToChangeSpeed = s.GetFloat("timeToChangeSpeed");
+        Reset(
+            s.GetFloat("approachAngle"),
+            s.GetFloat("subjectInitDistance"),
+            s.GetFloat("targetInitDistance"),
+            s.GetFloat("targetInitSpeed"),
+            s.GetFloat("targetFinalSpeed"),
+            s.GetFloat("timeToChangeSpeed")
+        );
+        StartCoroutine(CountdownToBegin());
+    }
 
+    private IEnumerator CountdownToBegin()
+    {
+        yield return new WaitForSeconds(1f);
+        _active = true;
+    }
+
+    public void Reset(float approachAngle, float subjectInitDistance, float targetInitDistance, float targetInitSpeed,
+                        float targetFinalSpeed, float timeToChangeSpeed)
+    {
+        _approachAngle = approachAngle;
+        _subjectDistance = subjectInitDistance;
+        _targetDistance = targetInitDistance;
+        _targetSpeed = targetInitSpeed;
+        _targetFinalSpeed = targetFinalSpeed;
+        _timeToChangeSpeed = timeToChangeSpeed;
         _subjectSpeed = SubjectSpeeds.Min();
         _elapsedTime = 0d;
         _hasChangedSpeed = false;
-        _active = true;
         _recordedState = new List<object>();
         RecordCurrentState();
     }
@@ -116,6 +120,8 @@ public class TrialController : MonoBehaviour
     }
 
     private void RecordCurrentState() {
+        // self.state = (target_dis, target_speed, has_changed_speed, subject_dis, subject_speed)
+
         // Dictionary form
         _recordedState.Add(new Dictionary<string, object>(){
             ["target_distance"]   = _targetDistance, 
@@ -140,7 +146,7 @@ public class TrialController : MonoBehaviour
         cameraRot.eulerAngles = new Vector3(0, 90 + _approachAngle, 0);
         Subject.transform.rotation = cameraRot;
         
-        Path.transform.rotation = cameraRot;
+        SubjectRoad.transform.rotation = cameraRot;
     }
 
     private void GetInput()
