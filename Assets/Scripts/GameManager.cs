@@ -1,16 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
 using System.Linq;
 using TMPro;
+using UXF;
 
 public class GameManager : Singleton<GameManager>
 {
+    // Objects to manipulate
     public GameObject Target;
     public GameObject Subject;
     public GameObject Path;
     public TextMeshProUGUI StateDisplay;
+
+    // Experiment settings
     public int FPS = 30;
     public float[] ApproachAngleList = {135f, 140f, 145f};
     public float[] SubjectSpeedList = {2.0f, 4.0f, 8.0f, 10.0f, 12.0f, 14.0f};
@@ -24,11 +25,13 @@ public class GameManager : Singleton<GameManager>
     public float TargetMaxSpeed = 20f;
     public float TargetSpeedMean = 15f;
     public float TargetSpeedStd = 5f;
-    public float InterceptThreshold = 0.35f;
-    public float K = 0.017f;
+    public float InterceptThreshold = 0.7f;
 
+    // A no seed RNG- maybe add the ability to seed it later?
     private System.Random _random = new System.Random();
-    public float _approachAngle;
+
+    // Trial-specific variables
+    private float _approachAngle;
     private float _targetDistance;
     private float _targetSpeed;
     private float _subjectDistance;
@@ -52,24 +55,22 @@ public class GameManager : Singleton<GameManager>
         DontDestroyOnLoad(gameObject);
 
         // Game logic
-        ResetTask(_random.Next(0, TargetInitSpeedList.Length), _random.Next(0, ApproachAngleList.Length));
+        Reset(_random.Next(0, TargetInitSpeedList.Length), _random.Next(0, ApproachAngleList.Length));
     }
 
-    private void SetPositions()
+    private void FixedUpdate() 
     {
-        Target.transform.position = new Vector3(-_targetDistance, InterceptThreshold/2, 0);
-        Subject.transform.position = new Vector3(
-            -(float)System.Math.Cos(_approachAngle * Mathf.PI / 180) * _subjectDistance, 
-            InterceptThreshold/2, 
-            (float)System.Math.Sin(_approachAngle * Mathf.PI / 180) * _subjectDistance);
-        var cameraRot = new Quaternion();
-        cameraRot.eulerAngles = new Vector3(0, 90 + _approachAngle, 0);
-        Subject.transform.rotation = cameraRot;
-        
-        Path.transform.rotation = cameraRot;
+        if (_done) return;
+        Step(_subjectSpeed);
     }
 
-    private void ResetTask(int targetSpeedIndex, int approachAngleIndex)
+    private void Update()
+    {
+        GetInput();
+        SetPositions();
+        RenderUI();
+    }
+    private void Reset(int targetSpeedIndex, int approachAngleIndex)
     {
         Target.transform.localScale = new Vector3(InterceptThreshold, InterceptThreshold, InterceptThreshold);
         Subject.transform.localScale = new Vector3(InterceptThreshold, InterceptThreshold, InterceptThreshold);
@@ -83,17 +84,6 @@ public class GameManager : Singleton<GameManager>
         _subjectSpeed = SubjectSpeedList.Min();
         _elapsedTime = 0d;
         _done = false;
-    }
-
-    private void GetInput()
-    {
-        for (int i = 1; i <= SubjectSpeedList.Length && i < 10; i++)
-        {
-            if (Input.GetKey(i.ToString()))
-            {
-                _subjectSpeed = SubjectSpeedList[i-1];
-            }
-        }
     }
 
     private void Step(float subjectSpeed)
@@ -114,23 +104,34 @@ public class GameManager : Singleton<GameManager>
         _done = _subjectDistance < -InterceptThreshold || _targetDistance < -InterceptThreshold || targetSubjectDistance < InterceptThreshold;
     }
 
+    private void SetPositions()
+    {
+        Target.transform.position = new Vector3(-_targetDistance, InterceptThreshold/2, 0);
+        Subject.transform.position = new Vector3(
+            -(float)System.Math.Cos(_approachAngle * Mathf.PI / 180) * _subjectDistance, 
+            InterceptThreshold/2, 
+            (float)System.Math.Sin(_approachAngle * Mathf.PI / 180) * _subjectDistance);
+        var cameraRot = new Quaternion();
+        cameraRot.eulerAngles = new Vector3(0, 90 + _approachAngle, 0);
+        Subject.transform.rotation = cameraRot;
+        
+        Path.transform.rotation = cameraRot;
+    }
+
+    private void GetInput()
+    {
+        for (int i = 1; i <= SubjectSpeedList.Length && i < 10; i++)
+        {
+            if (Input.GetKey(i.ToString()))
+            {
+                _subjectSpeed = SubjectSpeedList[i-1];
+            }
+        }
+    }
+
     private void RenderUI()
     {
         StateDisplay.text = $"Target Distance: {_targetDistance}\nTarget Speed: {_targetSpeed}\nHas Changed Speed: {_hasChangedSpeed}\nSubject Distance: {_subjectDistance}\nSubject Speed: {_subjectSpeed}";
-        // self.state = (target_dis, target_speed, has_changed_speed, subject_dis, subject_speed)
-    }
-
-    private void FixedUpdate() 
-    {
-        if (_done) return;
-        GetInput();
-        Step(_subjectSpeed);
-    }
-
-    private void Update()
-    {
-        SetPositions();
-        RenderUI();
     }
 
     private double RandomNormal(double mean, double stdDev)
@@ -139,5 +140,10 @@ public class GameManager : Singleton<GameManager>
         double u2 = 1.0-_random.NextDouble();
         double randStdNormal = System.Math.Sqrt(-2.0f * System.Math.Log(u1)) * System.Math.Sin(2.0f * Mathf.PI * u2);
         return mean + stdDev * randStdNormal;
+    }
+
+    public void Generate(Session session)
+    {
+        session.CreateBlock(10);
     }
 }
