@@ -51,9 +51,16 @@ public class ExperimentManager : MonoBehaviour
     {
         if (t.Equals(t.block.lastTrial)) {
             Session.instance.End();
+            // Application.Quit();
         } else {
-            Session.instance.BeginNextTrial();
+            StartCoroutine(NextTrialAfterWait());
         }
+    }
+
+    private IEnumerator NextTrialAfterWait()
+    {
+        yield return new WaitForSeconds(1f);
+        Session.instance.BeginNextTrial();
     }
 
     private double RandomNormal(double mean, double stdDev)

@@ -151,6 +151,8 @@ public class TrialController : MonoBehaviour
 
     private void GetInput()
     {
+        if (!_active) return;
+        
         for (int i = 1; i <= SubjectSpeeds.Length && i < 10; i++)
         {
             if (Input.GetKey(i.ToString()))
