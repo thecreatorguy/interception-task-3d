@@ -46,13 +46,13 @@ public class TrialController : MonoBehaviour
         StateDisplay.alpha = DisplayStats ? 1 : 0;
     }
 
-    private void FixedUpdate() 
+    private void FixedUpdate() // constant distance between calls
     {
         if (!_active) return;
         Step(_subjectSpeed);
     }
 
-    private void Update()
+    private void Update() // Tied to frame renders
     {
         GetInput();
         SetPositions();
@@ -96,7 +96,7 @@ public class TrialController : MonoBehaviour
 
     private void Step(float subjectSpeed)
     {
-        _subjectDistance -= subjectSpeed / FPS;
+        _subjectDistance -= subjectSpeed * (1 / FPS); // Time.timeDelta
         _targetDistance -= _targetSpeed / FPS;
 
         _elapsedTime += 1d / FPS;
