@@ -1,16 +1,29 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UXF;
 
 public class ExperimentManager : MonoBehaviour
 {
+    public Camera BackgroundCamera;
+    public Camera MainCamera;
+    public TextMeshProUGUI waitScreen;
+
+    private TrialController tc;
+
     // A no seed RNG
     //TODO- maybe add the ability to seed it later? Look with Gabe
     private System.Random _random = new System.Random();
 
+    private void Start()
+    {
+        waitScreen.text = "";
+    }
+
     public void Generate()
     {
+        tc = GameObject.Find("TrialController").GetComponent<TrialController>();;
         Session sess = Session.instance;
 
         // Extract the settings
@@ -44,17 +57,52 @@ public class ExperimentManager : MonoBehaviour
             }
         }
         b.trials.Shuffle();
-        Session.instance.BeginNextTrial();
+
+        BackgroundCamera.enabled = false;
+        MainCamera.enabled = true;
+        tc.SetupNextTrial(Session.instance.NextTrial);
+        StartCoroutine(CountdownToBegin(Session.instance.FirstTrial));
     }
 
     public void TrialEnded(Trial t)
     {
-        if (t.Equals(t.block.lastTrial)) {
+        if (t.Equals(Session.instance.LastTrial)) {
             Session.instance.End();
-            // Application.Quit();
         } else {
-            StartCoroutine(NextTrialAfterWait());
+            tc.SetupNextTrial(Session.instance.NextTrial);
+            StartCoroutine(CountdownToBegin(Session.instance.NextTrial));
         }
+    }
+
+    private IEnumerator CountdownToBegin(Trial t)
+    {
+        if (!t.Equals(Session.instance.FirstTrial)) 
+        {
+            if (tc.WonPrevious) 
+            {
+                waitScreen.text = "Target Intercepted!\nPress 'A' To Start Next Trial";
+            } 
+            else 
+            {
+                waitScreen.text = "Target Not Intercepted\nPress 'A' To Start Next Trial";
+            }
+        } 
+        else 
+        {
+            waitScreen.text = "Press 'A' To Start Trial";
+        }
+        
+        while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
+            yield return null;
+        }
+        waitScreen.text = "3";
+        yield return new WaitForSeconds(1f);
+        waitScreen.text = "2";
+        yield return new WaitForSeconds(1f);
+        waitScreen.text = "1";
+        yield return new WaitForSeconds(1f);
+        waitScreen.text = "";
+        Session.instance.BeginNextTrial();
     }
 
     private IEnumerator NextTrialAfterWait()

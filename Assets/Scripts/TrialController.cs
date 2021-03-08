@@ -1,6 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UXF;
 
 public class TrialController : MonoBehaviour
@@ -20,6 +20,7 @@ public class TrialController : MonoBehaviour
     public bool HasChangedSpeed { get => hasChangedSpeed; }
     public float TargetSpeed { get => targetSpeed; }
     public float TargetDistance { get => targetDistance; }
+    public bool WonPrevious { get => wonPrevious; }
 
     // Trial-specific variables
     private float approachAngle;
@@ -41,6 +42,7 @@ public class TrialController : MonoBehaviour
     private double elapsedTime;
     private float lagCoefficient;
     private bool active = false;
+    private bool wonPrevious = false;
 
     private void Start() 
     {
@@ -64,10 +66,10 @@ public class TrialController : MonoBehaviour
         if (active) {
             GetInput();
             UpdateLogic();
-            RenderPositions();
         }
+        RenderPositions();
     }
-    public void BeginTrial(Trial t)
+    public void SetupNextTrial(Trial t)
     {
         Settings s = t.settings;
         approachAngle               = s.GetFloat("approachAngle");
@@ -91,12 +93,11 @@ public class TrialController : MonoBehaviour
         
         elapsedTime = 0d;
         hasChangedSpeed = false;
-        StartCoroutine(CountdownToBegin());
     }
 
-    private IEnumerator CountdownToBegin()
+    public void BeginTrial(Trial t)
     {
-        yield return new WaitForSeconds(1f);
+        SetupNextTrial(t);
         active = true;
     }
 
@@ -108,7 +109,8 @@ public class TrialController : MonoBehaviour
             hasChangedSpeed = true;
             targetSpeed = targetFinalSpeed;
         }
-        if (hasChangedSpeed) {
+        if (hasChangedSpeed) 
+        {
             double speedProportion = (elapsedTime - timeToChangeSpeed) / targetSpeedChangeDuration;
             targetSpeed = Mathf.Min(targetFinalSpeed, (float)speedProportion * (targetFinalSpeed - targetInitSpeed) + targetInitSpeed);
         }
@@ -123,7 +125,10 @@ public class TrialController : MonoBehaviour
         bool won = targetSubjectDistance < (targetRadius + subjectRadius);
         active = !(subjectDistance < -subjectRadius*2 || targetDistance < -targetRadius*2 || won);
         
-        if (!active) {
+        if (!active) 
+        {
+            wonPrevious = won;
+            Session.instance.CurrentTrial.result["intercepted"] = won;
             Session.instance.EndCurrentTrial();
         }
     }
@@ -146,6 +151,6 @@ public class TrialController : MonoBehaviour
     private void GetInput()
     {
         // TODO ask gabe about raw input?
-        desiredNextSubjectSpeed = Input.GetAxisRaw("Acceleration") * (subjectSpeedMax - subjectSpeedMin) + subjectSpeedMin;
+        desiredNextSubjectSpeed = Mathf.Max(0, Input.GetAxisRaw("Acceleration")) * (subjectSpeedMax - subjectSpeedMin) + subjectSpeedMin;
     }
 }
