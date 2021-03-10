@@ -115,7 +115,7 @@ public class TrialController : MonoBehaviour
             targetSpeed = Mathf.Min(targetFinalSpeed, (float)speedProportion * (targetFinalSpeed - targetInitSpeed) + targetInitSpeed);
         }
 
-        subjectSpeed += lagCoefficient * (desiredNextSubjectSpeed - subjectSpeed);
+        subjectSpeed += lagCoefficient * (desiredNextSubjectSpeed - subjectSpeed) * Time.deltaTime;
         subjectDistance -= subjectSpeed * Time.deltaTime;
         targetDistance -= targetSpeed * Time.deltaTime;
         

@@ -6,7 +6,7 @@
   "subjectInitDistanceMax": 30,
   "subjectSpeedMin": 0,
   "subjectSpeedMax": 14,
-  "lagCoefficient": 0.017,
+  "lagCoefficient": 1.02,
   "targetRadius": 0.35,
   "targetInitDistance": 45,
   "targetInitSpeeds": [11.25, 9.47, 8.18],
@@ -16,5 +16,7 @@
   "targetSpeedMin": 10,
   "targetSpeedMax": 20,
   "targetSpeedMean": 15,
-  "targetSpeedStdDev": 5
+  "targetSpeedStdDev": 5,
+  "trialRepetitionsPerBlock": 1,
+  "blocksPerSession": 1
 }

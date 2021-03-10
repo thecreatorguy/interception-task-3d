@@ -40,13 +40,15 @@ public class ExperimentManager : MonoBehaviour
         float targetSpeedMean        = s.GetFloat("targetSpeedMean");
         float targetSpeedStdDev      = s.GetFloat("targetSpeedStdDev");
 
-        // Create randomized trials
-        // TODO: look at this with Gabe
+        int trialRepetitionsPerBlock = s.GetInt("trialRepetitionsPerBlock");
+        int blocksPerSession         = s.GetInt("blocksPerSession");
+
+        // Create practice block
         Block b = sess.CreateBlock();
         foreach (float approachAngle in approachAngles) 
         {
             foreach (float targetInitSpeed in targetInitSpeeds) 
-            {
+            { 
                 Trial t = b.CreateTrial();
                 t.settings.SetValue("approachAngle", approachAngle);
                 t.settings.SetValue("subjectInitDistance", Random.Range(subjectInitDistanceMin, subjectInitDistanceMax)); //? different random?
@@ -56,12 +58,35 @@ public class ExperimentManager : MonoBehaviour
                         Mathf.Max(targetSpeedMin, Mathf.Min(targetSpeedMax, (float)RandomNormal(targetSpeedMean, targetSpeedStdDev)))); //?
             }
         }
-        b.trials.Shuffle();
+        b.trials.Shuffle(); 
 
+        // Create randomized trials
+        for (int blockNum = 0; blockNum < blocksPerSession; blockNum++) 
+        {
+            b = sess.CreateBlock();
+            foreach (float approachAngle in approachAngles) 
+            {
+                foreach (float targetInitSpeed in targetInitSpeeds) 
+                {
+                    for (int repetition = 0; repetition < trialRepetitionsPerBlock; repetition++) 
+                    {
+                        Trial t = b.CreateTrial();
+                        t.settings.SetValue("approachAngle", approachAngle);
+                        t.settings.SetValue("subjectInitDistance", Random.Range(subjectInitDistanceMin, subjectInitDistanceMax)); //? different random?
+                        t.settings.SetValue("targetInitSpeed", targetInitSpeed);
+                        t.settings.SetValue("timeToChangeSpeed", Random.Range(timeToChangeSpeedMin, timeToChangeSpeedMax)); //?
+                        t.settings.SetValue("targetFinalSpeed", 
+                                Mathf.Max(targetSpeedMin, Mathf.Min(targetSpeedMax, (float)RandomNormal(targetSpeedMean, targetSpeedStdDev)))); //?
+                    }
+                }
+            }
+            b.trials.Shuffle();
+        }
+        
         BackgroundCamera.enabled = false;
         MainCamera.enabled = true;
         tc.SetupNextTrial(Session.instance.NextTrial);
-        StartCoroutine(CountdownToBegin(Session.instance.FirstTrial));
+        StartCoroutine(CountdownToBegin(Session.instance.FirstTrial, "Practice"));
     }
 
     public void TrialEnded(Trial t)
@@ -70,27 +95,33 @@ public class ExperimentManager : MonoBehaviour
             Session.instance.End();
         } else {
             tc.SetupNextTrial(Session.instance.NextTrial);
-            StartCoroutine(CountdownToBegin(Session.instance.NextTrial));
+            string blockLabel = null;
+            if (Session.instance.NextTrial.block != t.block) {
+                blockLabel = t.block.number.ToString();
+            }
+            StartCoroutine(CountdownToBegin(Session.instance.NextTrial, blockLabel));
         }
     }
 
-    private IEnumerator CountdownToBegin(Trial t)
+    private IEnumerator CountdownToBegin(Trial t, string blockLabel = null)
     {
+        waitScreen.text = "";
+        if (blockLabel != null) 
+        {
+            waitScreen.text += $"Starting Block {blockLabel}\n";
+        }
         if (!t.Equals(Session.instance.FirstTrial)) 
         {
             if (tc.WonPrevious) 
             {
-                waitScreen.text = "Target Intercepted!\nPress 'A' To Start Next Trial";
+                waitScreen.text += "Target Intercepted!\n";
             } 
             else 
             {
-                waitScreen.text = "Target Not Intercepted\nPress 'A' To Start Next Trial";
+                waitScreen.text += "Target Not Intercepted\n";
             }
-        } 
-        else 
-        {
-            waitScreen.text = "Press 'A' To Start Trial";
         }
+        waitScreen.text += "Press 'A' To Start Trial";
         
         while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
             yield return null;
