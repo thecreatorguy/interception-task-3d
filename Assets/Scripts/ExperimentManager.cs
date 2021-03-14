@@ -8,9 +8,10 @@ public class ExperimentManager : MonoBehaviour
 {
     public Camera BackgroundCamera;
     public Camera MainCamera;
-    public TextMeshProUGUI waitScreen;
+    public TextMeshProUGUI Display;
 
     private TrialController tc;
+    private static float waitTime = 0.8f;
 
     // A no seed RNG
     //TODO- maybe add the ability to seed it later? Look with Gabe
@@ -18,7 +19,7 @@ public class ExperimentManager : MonoBehaviour
 
     private void Start()
     {
-        waitScreen.text = "";
+        Display.text = "";
     }
 
     public void Generate()
@@ -83,6 +84,7 @@ public class ExperimentManager : MonoBehaviour
             b.trials.Shuffle();
         }
         
+        Cursor.visible = false;
         BackgroundCamera.enabled = false;
         MainCamera.enabled = true;
         tc.SetupNextTrial(Session.instance.NextTrial);
@@ -105,41 +107,58 @@ public class ExperimentManager : MonoBehaviour
 
     private IEnumerator CountdownToBegin(Trial t, string blockLabel = null)
     {
-        waitScreen.text = "";
+        Display.text = "";
         if (blockLabel != null) 
         {
-            waitScreen.text += $"Starting Block {blockLabel}\n";
+            Display.text += $"Starting Block {blockLabel}\n";
         }
         if (!t.Equals(Session.instance.FirstTrial)) 
         {
             if (tc.WonPrevious) 
             {
-                waitScreen.text += "Target Intercepted!\n";
+                Display.text += "Target Intercepted!\n";
             } 
             else 
             {
-                waitScreen.text += "Target Not Intercepted\n";
+                Display.text += "Target Not Intercepted\n";
             }
         }
-        waitScreen.text += "Press 'A' To Start Trial";
+        Display.text += "Press 'A' To Start Trial";
         
         while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
             yield return null;
         }
-        waitScreen.text = "3";
-        yield return new WaitForSeconds(1f);
-        waitScreen.text = "2";
-        yield return new WaitForSeconds(1f);
-        waitScreen.text = "1";
-        yield return new WaitForSeconds(1f);
-        waitScreen.text = "";
+        Display.text = "3";
+        yield return new WaitForSeconds(waitTime);
+        Display.text = "2";
+        yield return new WaitForSeconds(waitTime);
+        Display.text = "1";
+        yield return new WaitForSeconds(waitTime);
+        Display.text = "";
         Session.instance.BeginNextTrial();
     }
 
-    private IEnumerator NextTrialAfterWait()
+    public void SessionOver()
     {
-        yield return new WaitForSeconds(1f);
-        Session.instance.BeginNextTrial();
+        Display.text = "";
+        if (tc.WonPrevious) 
+        {
+            Display.text += "Target Intercepted!\n";
+        } 
+        else 
+        {
+            Display.text += "Target Not Intercepted\n";
+        }
+        Display.text += "Final Trial Finished\nPress 'A' To Exit";
+        StartCoroutine(WaitToExit());
+    }
+    private IEnumerator WaitToExit()
+    {
+        while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
+            yield return null;
+        }
+        Display.text = "Exiting...";
+        Application.Quit();
     }
 
     private double RandomNormal(double mean, double stdDev)
