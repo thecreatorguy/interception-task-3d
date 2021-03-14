@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UXF;
@@ -42,7 +43,10 @@ public class TrialController : MonoBehaviour
     private double elapsedTime;
     private float lagCoefficient;
     private bool active = false;
+    private bool won = false;
     private bool wonPrevious = false;
+    private bool aiPlayerEnabled = false;
+    private ActiveInferencePlayer aiPlayer;
 
     private void Start() 
     {
@@ -65,7 +69,17 @@ public class TrialController : MonoBehaviour
     {
         if (active) {
             GetInput();
-            UpdateLogic();
+            if (UpdateLogic(Time.deltaTime))
+            {
+                if (aiPlayerEnabled)
+                {
+                    aiPlayer.Cleanup();
+                }
+                active = false;
+                wonPrevious = won;
+                Session.instance.CurrentTrial.result["intercepted"] = won;
+                Session.instance.EndCurrentTrial();
+            }
         }
         RenderPositions();
     }
@@ -85,6 +99,7 @@ public class TrialController : MonoBehaviour
         targetFinalSpeed            = s.GetFloat("targetFinalSpeed");
         targetSpeedChangeDuration   = s.GetDouble("targetSpeedChangeDuration");
         timeToChangeSpeed           = s.GetFloat("timeToChangeSpeed");
+        aiPlayerEnabled             = s.GetBool("aiPlayerEnabled");
 
         subjectRadius = s.GetFloat("subjectRadius"); 
         targetRadius  = s.GetFloat("targetRadius");
@@ -98,12 +113,19 @@ public class TrialController : MonoBehaviour
     public void BeginTrial(Trial t)
     {
         SetupNextTrial(t);
+        if (aiPlayerEnabled)
+        {
+            Settings s = t.settings;
+            var shell = s.GetString("shell");
+            var command = s.GetString("aiCommand");
+            aiPlayer = new ActiveInferencePlayer(shell, command);
+        }
         active = true;
     }
 
-    private void UpdateLogic()
+    private bool UpdateLogic(float deltaTime)
     {
-        elapsedTime += Time.deltaTime;
+        elapsedTime += deltaTime;
         if (!hasChangedSpeed && elapsedTime >= timeToChangeSpeed) 
         {
             hasChangedSpeed = true;
@@ -115,22 +137,15 @@ public class TrialController : MonoBehaviour
             targetSpeed = Mathf.Min(targetFinalSpeed, (float)speedProportion * (targetFinalSpeed - targetInitSpeed) + targetInitSpeed);
         }
 
-        subjectSpeed += lagCoefficient * (desiredNextSubjectSpeed - subjectSpeed) * Time.deltaTime;
-        subjectDistance -= subjectSpeed * Time.deltaTime;
-        targetDistance -= targetSpeed * Time.deltaTime;
+        subjectSpeed += lagCoefficient * (desiredNextSubjectSpeed - subjectSpeed) * deltaTime;
+        subjectDistance -= subjectSpeed * deltaTime;
+        targetDistance -= targetSpeed * deltaTime;
         
         Vector3 s = subject.transform.position;
         Vector3 t = target.transform.position;
         float targetSubjectDistance = Mathf.Sqrt(Mathf.Pow(s.x - t.x, 2) + Mathf.Pow(s.z - t.z, 2));
-        bool won = targetSubjectDistance < (targetRadius + subjectRadius);
-        active = !(subjectDistance < -subjectRadius*2 || targetDistance < -targetRadius*2 || won);
-        
-        if (!active) 
-        {
-            wonPrevious = won;
-            Session.instance.CurrentTrial.result["intercepted"] = won;
-            Session.instance.EndCurrentTrial();
-        }
+        won = targetSubjectDistance < (targetRadius + subjectRadius);
+        return subjectDistance < -subjectRadius*2 || targetDistance < -targetRadius*2 || won;
     }
 
     private void RenderPositions()
@@ -150,7 +165,14 @@ public class TrialController : MonoBehaviour
 
     private void GetInput()
     {
-        // TODO ask gabe about raw input?
-        desiredNextSubjectSpeed = Mathf.Max(0, Input.GetAxisRaw("Acceleration")) * (subjectSpeedMax - subjectSpeedMin) + subjectSpeedMin;
+        if (aiPlayerEnabled) 
+        {
+            desiredNextSubjectSpeed = aiPlayer.Step(SubjectSpeed, SubjectDistance, HasChangedSpeed, TargetSpeed, TargetDistance);
+        }
+        else 
+        {
+            // TODO ask gabe about raw input?
+            desiredNextSubjectSpeed = Mathf.Max(0, Input.GetAxisRaw("Acceleration")) * (subjectSpeedMax - subjectSpeedMin) + subjectSpeedMin;
+        }
     }
 }

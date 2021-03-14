@@ -9,9 +9,11 @@ public class ExperimentManager : MonoBehaviour
     public Camera BackgroundCamera;
     public Camera MainCamera;
     public TextMeshProUGUI Display;
+    private static float waitTime = 0.8f;
 
     private TrialController tc;
-    private static float waitTime = 0.8f;
+    private bool aiPlayerEnabled = false;
+    
 
     // A no seed RNG
     //TODO- maybe add the ability to seed it later? Look with Gabe
@@ -20,15 +22,26 @@ public class ExperimentManager : MonoBehaviour
     private void Start()
     {
         Display.text = "";
+        tc = GameObject.Find("TrialController").GetComponent<TrialController>();
     }
 
     public void Generate()
     {
-        tc = GameObject.Find("TrialController").GetComponent<TrialController>();;
+        // Generate the session
         Session sess = Session.instance;
 
-        // Extract the settings
+        // Add participant detail settings
         Settings s = sess.settings;
+        object temp;
+        Session.instance.participantDetails.TryGetValue("aiPlayerEnabled", out temp);
+        aiPlayerEnabled = (bool)temp;
+        s.SetValue("aiPlayerEnabled", aiPlayerEnabled);
+        Session.instance.participantDetails.TryGetValue("shell", out temp);
+        s.SetValue("shell", (string)temp);
+        Session.instance.participantDetails.TryGetValue("aiCommand", out temp);
+        s.SetValue("aiCommand", (string)temp);
+
+        // Extract the settings used for generating trials
         List<float> approachAngles   = s.GetFloatList("approachAngles");
         float subjectInitDistanceMin = s.GetFloat("subjectInitDistanceMin");
         float subjectInitDistanceMax = s.GetFloat("subjectInitDistanceMax");
@@ -84,7 +97,7 @@ public class ExperimentManager : MonoBehaviour
             b.trials.Shuffle();
         }
         
-        Cursor.visible = false;
+        if (!aiPlayerEnabled) Cursor.visible = false;
         BackgroundCamera.enabled = false;
         MainCamera.enabled = true;
         tc.SetupNextTrial(Session.instance.NextTrial);
@@ -107,13 +120,49 @@ public class ExperimentManager : MonoBehaviour
 
     private IEnumerator CountdownToBegin(Trial t, string blockLabel = null)
     {
-        Display.text = "";
-        if (blockLabel != null) 
+        if (!aiPlayerEnabled) 
         {
-            Display.text += $"Starting Block {blockLabel}\n";
+            Display.text = "";
+            if (blockLabel != null) 
+            {
+                Display.text += $"Starting Block {blockLabel}\n";
+            }
+            if (!t.Equals(Session.instance.FirstTrial)) 
+            {
+                if (tc.WonPrevious) 
+                {
+                    Display.text += "Target Intercepted!\n";
+                } 
+                else 
+                {
+                    Display.text += "Target Not Intercepted\n";
+                }
+            }
+            Display.text += "Press 'A' To Start Trial";
+            
+            while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
+                yield return null;
+            }
+            Display.text = "3";
+            yield return new WaitForSeconds(waitTime);
+            Display.text = "2";
+            yield return new WaitForSeconds(waitTime);
+            Display.text = "1";
+            yield return new WaitForSeconds(waitTime);
+            Display.text = "";
         }
-        if (!t.Equals(Session.instance.FirstTrial)) 
+        Session.instance.BeginNextTrial();
+    }
+
+    public void SessionOver()
+    {
+        StartCoroutine(WaitToExit());
+    }
+    private IEnumerator WaitToExit()
+    {   
+        if (!aiPlayerEnabled) 
         {
+            Display.text = "";
             if (tc.WonPrevious) 
             {
                 Display.text += "Target Intercepted!\n";
@@ -122,40 +171,10 @@ public class ExperimentManager : MonoBehaviour
             {
                 Display.text += "Target Not Intercepted\n";
             }
-        }
-        Display.text += "Press 'A' To Start Trial";
-        
-        while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
-            yield return null;
-        }
-        Display.text = "3";
-        yield return new WaitForSeconds(waitTime);
-        Display.text = "2";
-        yield return new WaitForSeconds(waitTime);
-        Display.text = "1";
-        yield return new WaitForSeconds(waitTime);
-        Display.text = "";
-        Session.instance.BeginNextTrial();
-    }
-
-    public void SessionOver()
-    {
-        Display.text = "";
-        if (tc.WonPrevious) 
-        {
-            Display.text += "Target Intercepted!\n";
-        } 
-        else 
-        {
-            Display.text += "Target Not Intercepted\n";
-        }
-        Display.text += "Final Trial Finished\nPress 'A' To Exit";
-        StartCoroutine(WaitToExit());
-    }
-    private IEnumerator WaitToExit()
-    {
-        while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
-            yield return null;
+            Display.text += "Final Trial Finished\nPress 'A' To Exit";
+            while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
+                yield return null;
+            }
         }
         Display.text = "Exiting...";
         Application.Quit();
