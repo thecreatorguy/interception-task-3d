@@ -17,6 +17,6 @@
   "targetSpeedMax": 20,
   "targetSpeedMean": 15,
   "targetSpeedStdDev": 5,
-  "trialRepetitionsPerBlock": 1,
-  "blocksPerSession": 1
+  "trialRepetitionsPerBlock": 10,
+  "blocksPerSession": 4
 }
