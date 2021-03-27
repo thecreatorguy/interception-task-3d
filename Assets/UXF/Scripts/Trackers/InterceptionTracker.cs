@@ -33,17 +33,17 @@ namespace UXF
         /// <returns></returns>
         protected override UXFDataRow GetCurrentValues()
         {
-            TrialController tm = gameObject.GetComponent<TrialController>();
+            InterceptionEnvironment e = gameObject.GetComponent<InterceptionEnvironment>();
 
             string format = "0.####";
             var values = new UXFDataRow()
             {
                 ("delta_time", Time.deltaTime.ToString(format)),
-                ("subject_speed", tm.SubjectSpeed.ToString(format)),
-                ("subject_distance", tm.SubjectDistance.ToString(format)),
-                ("has_changed_speed", tm.HasChangedSpeed),
-                ("target_speed", tm.TargetSpeed.ToString(format)),
-                ("target_distance", tm.TargetDistance.ToString(format))
+                ("subject_speed", e.SubjectSpeed.ToString(format)),
+                ("subject_distance", e.SubjectDistance.ToString(format)),
+                ("has_changed_speed", e.HasChangedSpeed),
+                ("target_speed", e.TargetSpeed.ToString(format)),
+                ("target_distance", e.TargetDistance.ToString(format))
             };
 
             return values;

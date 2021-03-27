@@ -9,8 +9,8 @@ public class ExperimentManager : MonoBehaviour
     public Camera BackgroundCamera;
     public Camera MainCamera;
     public TextMeshProUGUI Display;
-
     private TrialController tc;
+    private InterceptionEnvironment env;
     private static float waitTime = 0.8f;
 
     // A no seed RNG
@@ -19,12 +19,13 @@ public class ExperimentManager : MonoBehaviour
 
     private void Start()
     {
+        tc = GameObject.Find("TrialController").GetComponent<TrialController>();
+        env = GameObject.Find("Environment").GetComponent<InterceptionEnvironment>();
         Display.text = "";
     }
 
     public void Generate()
     {
-        tc = GameObject.Find("TrialController").GetComponent<TrialController>();;
         Session sess = Session.instance;
 
         // Extract the settings
@@ -84,9 +85,9 @@ public class ExperimentManager : MonoBehaviour
             b.trials.Shuffle();
         }
         
-        Cursor.visible = false;
-        BackgroundCamera.enabled = false;
-        MainCamera.enabled = true;
+        // Cursor.visible = false;
+        GameObject.Find("BackgroundCamera").GetComponent<Camera>().enabled = false;
+        GameObject.Find("MainCamera").GetComponent<Camera>().enabled = true;
         tc.SetupNextTrial(Session.instance.NextTrial);
         StartCoroutine(CountdownToBegin(Session.instance.FirstTrial, "Practice"));
     }
@@ -114,7 +115,7 @@ public class ExperimentManager : MonoBehaviour
         }
         if (!t.Equals(Session.instance.FirstTrial)) 
         {
-            if (tc.WonPrevious) 
+            if (env.WonPrevious) 
             {
                 Display.text += "Target Intercepted!\n";
             } 
@@ -141,7 +142,7 @@ public class ExperimentManager : MonoBehaviour
     public void SessionOver()
     {
         Display.text = "";
-        if (tc.WonPrevious) 
+        if (env.WonPrevious) 
         {
             Display.text += "Target Intercepted!\n";
         } 
@@ -149,16 +150,7 @@ public class ExperimentManager : MonoBehaviour
         {
             Display.text += "Target Not Intercepted\n";
         }
-        Display.text += "Final Trial Finished\nPress 'A' To Exit";
-        StartCoroutine(WaitToExit());
-    }
-    private IEnumerator WaitToExit()
-    {
-        while (!Input.GetKeyDown(KeyCode.Joystick1Button0)) {
-            yield return null;
-        }
-        Display.text = "Exiting...";
-        Application.Quit();
+        Display.text += "Final Trial Finished";
     }
 
     private double RandomNormal(double mean, double stdDev)
