@@ -6,8 +6,6 @@ using UXF;
 
 public class ExperimentManager : MonoBehaviour
 {
-    public Camera BackgroundCamera;
-    public Camera MainCamera;
     public TextMeshProUGUI Display;
     private TrialController tc;
     private InterceptionEnvironment env;
@@ -21,7 +19,9 @@ public class ExperimentManager : MonoBehaviour
     {
         tc = GameObject.Find("TrialController").GetComponent<TrialController>();
         env = GameObject.Find("Environment").GetComponent<InterceptionEnvironment>();
-        Display.text = "";
+        
+        GameObject.Find("BackgroundCamera").GetComponent<Camera>().enabled = true;
+        GameObject.Find("MainCamera").GetComponent<Camera>().enabled = false;
     }
 
     public void Generate()
