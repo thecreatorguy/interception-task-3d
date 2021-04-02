@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
+using Unity.MLAgents.SideChannels;
 using UXF;
 
 public class ActiveInferenceAgent : Agent
@@ -38,7 +39,6 @@ public class ActiveInferenceAgent : Agent
         List<float> approachAngles   = settings.GetFloatList("approachAngles");
         float subjectInitDistanceMin = settings.GetFloat("subjectInitDistanceMin");
         float subjectInitDistanceMax = settings.GetFloat("subjectInitDistanceMax");
-        float targetInitDistance     = settings.GetFloat("targetInitDistance");
         List<float> targetInitSpeeds = settings.GetFloatList("targetInitSpeeds");
         float timeToChangeSpeedMin   = settings.GetFloat("timeToChangeSpeedMin");
         float timeToChangeSpeedMax   = settings.GetFloat("timeToChangeSpeedMax");
@@ -47,12 +47,22 @@ public class ActiveInferenceAgent : Agent
         float targetSpeedMean        = settings.GetFloat("targetSpeedMean");
         float targetSpeedStdDev      = settings.GetFloat("targetSpeedStdDev");
 
-        settings.SetValue("approachAngle", approachAngles[Random.Range(0, approachAngles.Count)]);
-        settings.SetValue("subjectInitDistance", Random.Range(subjectInitDistanceMin, subjectInitDistanceMax));
-        settings.SetValue("targetInitSpeed", targetInitSpeeds[Random.Range(0, targetInitSpeeds.Count)]);
-        settings.SetValue("timeToChangeSpeed", Random.Range(timeToChangeSpeedMin, timeToChangeSpeedMax));
-        settings.SetValue("targetFinalSpeed", 
-                Mathf.Max(targetSpeedMin, Mathf.Min(targetSpeedMax, (float)RandomNormal(targetSpeedMean, targetSpeedStdDev))));
+        EnvironmentParameters ep = Academy.Instance.EnvironmentParameters;
+        float aa = ep.GetWithDefault("approachAngle", approachAngles[Random.Range(0, approachAngles.Count)]);
+        settings.SetValue("approachAngle", aa);
+
+        float sid = ep.GetWithDefault("subjectInitDistance", Random.Range(subjectInitDistanceMin, subjectInitDistanceMax));
+        settings.SetValue("subjectInitDistance", sid);
+
+        float tis = ep.GetWithDefault("targetInitSpeed", targetInitSpeeds[Random.Range(0, targetInitSpeeds.Count)]);
+        settings.SetValue("targetInitSpeed", tis);
+
+        float ttcs = ep.GetWithDefault("timeToChangeSpeed", Random.Range(timeToChangeSpeedMin, timeToChangeSpeedMax));
+        settings.SetValue("timeToChangeSpeed", ttcs);
+
+        float tfs = ep.GetWithDefault("targetFinalSpeed", 
+            Mathf.Max(targetSpeedMin, Mathf.Min(targetSpeedMax, (float)RandomNormal(targetSpeedMean, targetSpeedStdDev))));
+        settings.SetValue("targetFinalSpeed", tfs);
         
         env.Reset(settings);
         env.Render();
